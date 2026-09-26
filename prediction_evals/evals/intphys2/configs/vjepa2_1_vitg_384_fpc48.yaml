@@ -1,0 +1,77 @@
+# IntPhys2 evaluation config for V-JEPA 2.1 ViT-g/16 @ 384px — 48 frames per clip
+# Weights: https://github.com/facebookresearch/vjepa2 (V-JEPA 2.1)
+#
+# Surprise = L1 between predictor output and target-encoder features, using
+# only the LAST of the 4 hierarchical levels (layer 39) of V-JEPA 2.1.
+#
+# USAGE — local (single GPU):
+#   cd prediction_evals/
+#   python -m evals.main --devices cuda:0 --fname evals/intphys2/configs/vjepa2_1_vitg_384_fpc48.yaml
+#
+# USAGE — SLURM cluster (RCS): see main_job_vjepa2_1.sh at the repo root.
+#
+# The checkpoint (~17 GB) is downloaded once to $TORCH_HOME/hub/checkpoints/.
+# Switch `dataset` by hand: intphys2-debug -> intphys2-main.
+
+nodes: 6            # every GPU with >=16 GB: gpu-01,02,04 (16 GB), gpu-05,07 (24 GB), gpu-06 (32 GB)
+min_nodes: 1        # start with whatever is free (1..6 nodes); size is fixed once started
+tasks_per_node: 1
+
+tag: fpc48
+eval_name: intphys2
+folder: ./results/vjepa2_1_vitg_384/
+resume_checkpoint: false
+
+experiment:
+  data:
+    batch_size: 1
+    resolution: 384
+    stride_sliding_window: 2
+    use_bfloat16: true
+    frames_per_clip: 48
+    # IntPhys2 paper App. D.3 / Table 8 (best V-JEPA 2 setup): window 48 @ 6 fps,
+    # predict to end of window, contexts [4,6,8,10,12,14] scaled by 48/16
+    # (identical to the authors' vjepa_2.yaml). Report max accuracy over contexts.
+    context_lengths: [12, 18, 24, 30, 36, 42]
+    frame_steps: 10     # 6 fps
+    # Windows per forward pass. Each window is independent, so this does not
+    # change results; 2 keeps ViT-g (fp32 weights ~8.5 GB) under 16 GB VRAM.
+    chunk_size: 2
+    num_frames_to_pred: -1
+    dataset: intphys2-debug
+  max_context_mode: true
+
+model_kwargs:
+  checkpoint: https://dl.fbaipublicfiles.com/vjepa2/vjepa2_1_vitg_384.pt
+  module_name: app.vjepa_2_1.modelcustom.default_wrapper
+  wrapper_kwargs:
+    mask_index: 0
+  pretrain_kwargs:
+    resolution: 384
+    encoder:
+      model_name: vit_giant_xformers
+      checkpoint_key: encoder
+      patch_size: 16
+      tubelet_size: 2
+      use_sdpa: true
+      use_rope: true
+      interpolate_rope: true
+      img_temporal_dim_size: 1
+      modality_embedding: true
+      n_output_distillation: 4
+    target_encoder:
+      checkpoint_key: target_encoder
+    predictor:
+      model_name: vit_predictor
+      checkpoint_key: predictor
+      predictor_embed_dim: 384
+      depth: 24
+      num_heads: 12
+      use_mask_tokens: true
+      num_mask_tokens: 8
+      use_rope: true
+      interpolate_rope: true
+      img_temporal_dim_size: 1
+      modality_embedding: true
+      n_output_distillation: 4
+      return_all_tokens: true

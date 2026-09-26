@@ -76,6 +76,7 @@ def main(args_eval, resume_preempt=False):
     num_frames_to_pred = args_data.get('num_frames_to_pred',-1)
     frame_steps = args_data.get('frame_steps', 4)
     dataset = args_data.get('dataset', 'intphys2-main')
+    chunk_size = args_data.get('chunk_size', 12)
 
     # -- EXPERIMENT
     mode = args_exp.get('mode', 'all')
@@ -148,7 +149,8 @@ def main(args_eval, resume_preempt=False):
             dataset=dataset,
             resolution=resolution,
             num_frames_to_pred=num_frames_to_pred,
-            max_context_mode=max_context_mode)
+            max_context_mode=max_context_mode,
+            chunk_size=chunk_size)
             
         if dataset != "intphys2-main":
             logger.info("Gathering everything")
@@ -198,7 +200,8 @@ def extract_losses(
     dataset="intphys2-main",
     resolution=224,
     num_frames_to_pred=-1,
-    max_context_mode=False
+    max_context_mode=False,
+    chunk_size=12,
 ):
     print(context_lengths)
 
@@ -275,7 +278,7 @@ def extract_losses(
             
             chunked_preds = []
             chunked_targets = []
-            CHUNK_SIZE = 12
+            CHUNK_SIZE = chunk_size
 
             if max_context_mode:
                 losses_beginning = []

@@ -70,6 +70,7 @@ parser.add_argument(
     help="If specified, qos value to use when submitting jobs",
 )
 parser.add_argument("--time", type=int, default=4300, help="time in minutes to run job")
+parser.add_argument("--mem", type=str, default=SLURM_MEM, help="RAM per node (sbatch --mem)")
 
 
 class Trainer:
@@ -108,6 +109,8 @@ def launch_evals_with_parsed_args(
     tasks_per_node=1,
     delay_seconds=10,
     exclude_nodes=None,
+    mem=SLURM_MEM,
+    min_nodes=None,
 ):
     if not isinstance(args_for_evals, list):
         logger.info(f"Passed in eval-args of type {type(args_for_evals)}")
@@ -120,7 +123,7 @@ def launch_evals_with_parsed_args(
         slurm_account=account,
         slurm_partition=partition,
         slurm_qos=qos,
-        slurm_mem=SLURM_MEM,
+        slurm_mem=mem,
         timeout_min=timeout,
         nodes=nodes,
         tasks_per_node=tasks_per_node,
@@ -138,6 +141,11 @@ def launch_evals_with_parsed_args(
 
     if exclude_nodes is not None:
         executor.update_parameters(slurm_exclude=exclude_nodes)
+
+    # Node range: SLURM starts the job as soon as `min_nodes` are free and
+    # allocates as many as possible up to `nodes` without delaying the start.
+    if min_nodes is not None and min_nodes < nodes:
+        executor.update_parameters(slurm_additional_parameters={"nodes": f"{min_nodes}-{nodes}"})
 
     jobs, trainers = [], []
     with executor.batch():
@@ -172,15 +180,17 @@ def launch_evals():
     # 2. Parse each yaml config file as a dict and place in list
     # ---------------------------------------------------------------------- #
     nodes, tasks_per_node = None, None
+    min_nodes = None
     configs = []
     for f in config_fnames:
         with open(f, "r") as y_file:
             _params = yaml.load(y_file, Loader=yaml.FullLoader)
             nodes = int(_params.get("nodes"))
+            min_nodes = int(_params.get("min_nodes", nodes))
             tasks_per_node = int(_params.get("tasks_per_node"))
             configs += [_params]
     logger.info(f"Loaded {len(configs)} config files")
-    logger.info(f"Running all jobs with {nodes=} / {tasks_per_node=}")
+    logger.info(f"Running all jobs with {min_nodes=} / {nodes=} / {tasks_per_node=}")
     # ---------------------------------------------------------------------- #
 
     # ---------------------------------------------------------------------- #
@@ -196,6 +206,8 @@ def launch_evals():
         nodes=nodes,
         tasks_per_node=tasks_per_node,
         exclude_nodes=args.exclude,
+        mem=args.mem,
+        min_nodes=min_nodes,
     )
     # ---------------------------------------------------------------------- #
 
