@@ -75,6 +75,10 @@ EVAL_EXCLUDE="gpu-03,gpu-08"
 
 export HF_HOME="/data/asem.a.abdelaziz/gp-2027a/huggingface_downloads"
 export TORCH_HOME="/data/asem.a.abdelaziz/gp-2027a/torch_downloads"
+# Fewer fragmentation OOMs: contexts 2..42 and 1-/2-window chunks give many
+# tensor sizes; on 16 GB cards the cache fragmented enough in job 1624
+# (Main) for a 1.4 GB allocation to fail once and be retried.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 CKPT_URL="https://dl.fbaipublicfiles.com/vjepa2/vjepa2_1_vitg_384.pt"
 # Must match the path the wrapper resolves: torch.hub.get_dir()/checkpoints/<basename>
 CKPT_PATH="$TORCH_HOME/hub/checkpoints/$(basename "$CKPT_URL")"
