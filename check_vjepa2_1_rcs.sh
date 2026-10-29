@@ -20,8 +20,6 @@
 
 #SBATCH --job-name=vjepa2_1_vramcheck
 #SBATCH --partition=gpu
-#SBATCH --account=grp-asem.a.abdelaziz
-#SBATCH --qos=normal
 #SBATCH --gres=gpu:rtx5060ti:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
