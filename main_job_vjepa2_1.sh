@@ -2,14 +2,17 @@
 # =============================================================================
 # main_job_vjepa2_1.sh — IntPhys2 V-JEPA 2.1 (ViT-g/16, 384px) launcher for RCS
 #
-# Submitted via Open OnDemand Job Composer.
+# Submit from the repo root (or the Open OnDemand Job Composer):
+#   sbatch main_job_vjepa2_1.sh                                     # Debug
+#   sbatch --export=ALL,DATASET=intphys2-main main_job_vjepa2_1.sh  # Main
+# Optional overrides: CONFIG, MIN_NODES, EVAL_TIME_MIN.
 # This script:
 #   1. Clones IntPhys2 from GitHub (or pulls if already cloned)
 #   2. Creates / reuses a Python venv and installs requirements
 #   3. Downloads the V-JEPA 2.1 checkpoint (~17 GB) into $TORCH_HOME if missing
 #   4. Launches main_distributed.py, which uses submitit to submit the real
-#      GPU evaluation job into SLURM: 1-6 nodes (every node with a >=16 GB
-#      GPU), sized to whatever is free when it starts.
+#      GPU evaluation job into SLURM: MIN_NODES-6 nodes (every node with a
+#      >=16 GB GPU), sized to whatever is free when it starts.
 #
 # JOB LIMIT: max 2 jobs per user (queued + running, Open OnDemand sessions
 # count). This launcher + the eval job it submits = 2. Close any OOD
@@ -43,20 +46,29 @@ REPO_URL="https://github.com/Gad-MA/IntPhys2.git"
 PROJECT_ROOT="$HOME/IntPhys2"
 EVAL_ROOT="$PROJECT_ROOT/prediction_evals"
 VENV_DIR="$HOME/venvs/IntPhys2"
-# !! Switch between the fpc64 and fpc48 configs here !!
-CONFIG="$EVAL_ROOT/evals/intphys2/configs/vjepa2_1_vitg_384_fpc48.yaml"
+CONFIG="${CONFIG:-$EVAL_ROOT/evals/intphys2/configs/vjepa2_1_vitg_384_fpc48.yaml}"
+DATASET="${DATASET:-intphys2-debug}"   # intphys2-debug | intphys2-main | intphys2-heldout
 SUBMITIT_LOGS="$EVAL_ROOT/logs/submitit"
 RESULTS_DIR="$EVAL_ROOT/results/vjepa2_1_vitg_384"
 
 # Eval job resources (per node). Must fit the smallest eligible node
 # (gpu-01/02/04: 29000 MB schedulable, 12 CPUs; submitit asks 10 CPUs/node).
 EVAL_MEM="24G"
-# Minutes. Must cover the WORST case, i.e. min_nodes (=1) on the slowest
-# 16 GB card. Measured by check_vjepa2_1_rcs.sh (job 1613, RTX 5060 Ti):
-# ~6.6 min/video -> intphys2-debug (60 videos) ~6.6 h on 1 node, ~1.2 h on 6.
-# intphys2-main (1012 videos) needs ~112 GPU-h: raise min_nodes to >= 2 and
-# this to the matching wall time (gpu max: 4320). A shorter request starts sooner.
-EVAL_TIME_MIN=480
+# Fewest nodes to start with, and minutes. The time must cover the WORST
+# case: MIN_NODES nodes, all on the slowest 16 GB card. Measured by
+# check_vjepa2_1_rcs.sh (job 1613, RTX 5060 Ti): ~6.6 min/video, so
+#   debug   (60 videos):   ~6.6 GPU-h -> 1 node  ~6.6 h  (6 nodes ~1.2 h)
+#   main    (1012 videos): ~115 GPU-h -> 3 nodes ~39 h   (6 nodes ~20 h; 1 node > gpu max)
+#   heldout (344 videos):  ~38 GPU-h  -> 1 node  ~38 h
+# A shorter request starts sooner; gpu max is 4320 min.
+case "$DATASET" in
+    intphys2-debug)   DEFAULT_MIN_NODES=1; DEFAULT_TIME_MIN=480  ;;
+    intphys2-main)    DEFAULT_MIN_NODES=3; DEFAULT_TIME_MIN=2520 ;;
+    intphys2-heldout) DEFAULT_MIN_NODES=1; DEFAULT_TIME_MIN=2520 ;;
+    *) echo "Unknown DATASET=$DATASET" >&2; exit 1 ;;
+esac
+MIN_NODES="${MIN_NODES:-$DEFAULT_MIN_NODES}"
+EVAL_TIME_MIN="${EVAL_TIME_MIN:-$DEFAULT_TIME_MIN}"
 # GPUs below 16 GB: gpu-03 (GTX 1080 Ti 11 GB + RTX 3060 12 GB), gpu-08 (GTX 1080 Ti 11 GB)
 EVAL_EXCLUDE="gpu-03,gpu-08"
 
@@ -74,6 +86,7 @@ echo " Cluster    : $CLUSTER_NAME"
 echo " Project    : $PROJECT_ROOT"
 echo " Venv       : $VENV_DIR"
 echo " Config     : $CONFIG"
+echo " Dataset    : $DATASET  (min_nodes $MIN_NODES, $EVAL_TIME_MIN min)"
 echo " Checkpoint : $CKPT_PATH"
 echo " Logs       : $SUBMITIT_LOGS"
 echo " Results    : $RESULTS_DIR"
@@ -137,14 +150,29 @@ fi
 # ---------------------------------------------------------------------------
 echo ""
 echo "[4/4] Submitting evaluation job via submitit..."
-echo "  submitit will request 1-6 nodes x 1 GPU (whatever is free at start), $EVAL_MEM RAM/node, $EVAL_TIME_MIN min."
+
+# Per-run copy of the config with the requested dataset and min_nodes
+RUN_CONFIG_DIR="$EVAL_ROOT/logs/run_configs"
+RUN_CONFIG="$RUN_CONFIG_DIR/$(basename "${CONFIG%.yaml}")_${DATASET}_${SLURM_JOB_ID:-local}.yaml"
+mkdir -p "$RUN_CONFIG_DIR"
+python - "$CONFIG" "$RUN_CONFIG" "$DATASET" "$MIN_NODES" <<'EOF'
+import sys, yaml
+src, dst, dataset, min_nodes = sys.argv[1:]
+cfg = yaml.safe_load(open(src))
+cfg["experiment"]["data"]["dataset"] = dataset
+cfg["min_nodes"] = int(min_nodes)
+yaml.safe_dump(cfg, open(dst, "w"), sort_keys=False)
+EOF
+NODES=$(python -c "import yaml; print(yaml.safe_load(open('$RUN_CONFIG'))['nodes'])")
+echo "  Run config: $RUN_CONFIG"
+echo "  submitit will request $MIN_NODES-$NODES nodes x 1 GPU (whatever is free at start), $EVAL_MEM RAM/node, $EVAL_TIME_MIN min."
 echo ""
 
 mkdir -p "$SUBMITIT_LOGS" "$RESULTS_DIR"
 cd "$EVAL_ROOT"
 
 python -m evals.main_distributed \
-    --fname   "$CONFIG"              \
+    --fname   "$RUN_CONFIG"          \
     --folder  "$SUBMITIT_LOGS"       \
     --partition gpu                  \
     --account gp-2027-asem.a.abdelaziz-a  \
