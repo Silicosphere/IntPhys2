@@ -152,36 +152,24 @@ def main(args_eval, resume_preempt=False):
             max_context_mode=max_context_mode,
             chunk_size=chunk_size)
             
-        if dataset != "intphys2-main":
-            logger.info("Gathering everything")
-            all_losses = batch_all_gather(all_losses).cpu()
-            all_ids = batch_all_gather(all_ids).cpu().to(torch.int)
+        # No cross-rank gather: every rank saves its own shard, as the
+        # original code already did for intphys2-main. On RCS, NCCL between
+        # some nodes cannot connect, so the all_gather hung (job 1615) after
+        # every loss had been computed. Merge the _rank*.pth files when scoring.
+        all_losses = all_losses.cpu()
+        all_ids = all_ids.cpu().to(torch.int)
 
-            all_names = np.array(names)[all_ids.tolist()]
-        else:
-            all_losses = all_losses.cpu()
-            all_ids = all_ids.cpu().to(torch.int)
-
-            all_names = np.array(names)[all_ids.tolist()]
+        all_names = np.array(names)[all_ids.tolist()]
 
         logger.info("Saving...")
 
-        if dataset == "intphys2-main":
-             torch.save({ "frame_step":frame_step,
-                        "num_frames_to_pred":num_frames_to_pred,
-                        "context_lengths":all_context_lengths,
-                        "losses":all_losses,
-                        "names":all_names,
-                        },
-                        os.path.join(folder, f'losses_{frame_step}fs_{"_".join([str(ctxt) for ctxt in all_context_lengths])}ctxt_rank{rank}.pth'))
-        elif rank == 0 :
-            torch.save({ "frame_step":frame_step,
-                        "num_frames_to_pred":num_frames_to_pred,
-                        "context_lengths":all_context_lengths,
-                        "losses":all_losses,
-                        "names":all_names,
-                        },
-                        os.path.join(folder, f'losses_{frame_step}fs_{"_".join([str(ctxt) for ctxt in all_context_lengths])}ctxt.pth'))            
+        torch.save({ "frame_step":frame_step,
+                    "num_frames_to_pred":num_frames_to_pred,
+                    "context_lengths":all_context_lengths,
+                    "losses":all_losses,
+                    "names":all_names,
+                    },
+                    os.path.join(folder, f'losses_{frame_step}fs_{"_".join([str(ctxt) for ctxt in all_context_lengths])}ctxt_rank{rank}.pth'))
     
 
 @torch.no_grad()
@@ -382,10 +370,9 @@ def extract_losses(
     lengths = []
     for l in all_losses:
         lengths.append(l.size(2))
+    # Pad to this rank's max length only. Ranks no longer gather (see main),
+    # so the cross-rank all_reduce of max_length (where job 1615 hung) is gone.
     max_length = torch.tensor([max(lengths)]).to(device)
-    #We need to sync the max lengths otherwise we can't gather the losses afterwards
-    if data_name != f"IntPhys2-main":
-        dist.all_reduce(max_length, op=dist.ReduceOp.MAX)
     for l in all_losses:
         logger.info(l.shape)
     logger.info("Padding complete")
