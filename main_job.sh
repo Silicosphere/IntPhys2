@@ -12,7 +12,7 @@
 
 #SBATCH --job-name=psi_intphys2
 #SBATCH --partition=gpu
-#SBATCH --account=grp-asem.a.abdelaziz
+#SBATCH --account=gp-2027-asem.a.abdelaziz-a
 #SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -116,7 +116,7 @@ python -m evals.main_distributed \
     --fname   "$CONFIG"              \
     --folder  "$SUBMITIT_LOGS"       \
     --partition gpu                  \
-    --account grp-asem.a.abdelaziz  \
+    --account gp-2027-asem.a.abdelaziz-a  \
     --qos     normal                 \
     --time    4300                   \
     --exclude gpu-02,gpu-03,gpu-04

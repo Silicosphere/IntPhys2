@@ -18,7 +18,7 @@
 
 #SBATCH --job-name=vjepa2_1_intphys2
 #SBATCH --partition=gpu
-#SBATCH --account=grp-asem.a.abdelaziz
+#SBATCH --account=gp-2027-asem.a.abdelaziz-a
 #SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -52,10 +52,11 @@ RESULTS_DIR="$EVAL_ROOT/results/vjepa2_1_vitg_384"
 # (gpu-01/02/04: 29000 MB schedulable, 12 CPUs; submitit asks 10 CPUs/node).
 EVAL_MEM="24G"
 # Minutes. Must cover the WORST case, i.e. min_nodes (=1) on the slowest
-# 16 GB card: unmeasured estimate ~8 h for intphys2-debug. Check `sacct`
-# Elapsed/NodeList after the first run, then lower this or raise min_nodes
-# in the config (a shorter request starts sooner). gpu max: 4320.
-EVAL_TIME_MIN=600
+# 16 GB card. Measured by check_vjepa2_1_rcs.sh (job 1613, RTX 5060 Ti):
+# ~6.6 min/video -> intphys2-debug (60 videos) ~6.6 h on 1 node, ~1.2 h on 6.
+# intphys2-main (1012 videos) needs ~112 GPU-h: raise min_nodes to >= 2 and
+# this to the matching wall time (gpu max: 4320). A shorter request starts sooner.
+EVAL_TIME_MIN=480
 # GPUs below 16 GB: gpu-03 (GTX 1080 Ti 11 GB + RTX 3060 12 GB), gpu-08 (GTX 1080 Ti 11 GB)
 EVAL_EXCLUDE="gpu-03,gpu-08"
 
@@ -146,7 +147,7 @@ python -m evals.main_distributed \
     --fname   "$CONFIG"              \
     --folder  "$SUBMITIT_LOGS"       \
     --partition gpu                  \
-    --account grp-asem.a.abdelaziz  \
+    --account gp-2027-asem.a.abdelaziz-a  \
     --qos     normal                 \
     --time    "$EVAL_TIME_MIN"       \
     --mem     "$EVAL_MEM"            \

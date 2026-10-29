@@ -23,7 +23,7 @@
 #SBATCH --gres=gpu:rtx5060ti:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
+#SBATCH --mem=24G
 #SBATCH --time=01:00:00
 #SBATCH --output=/home/mohamed.gad04/logs/vjepa2_1_vramcheck_%j.out
 #SBATCH --error=/home/mohamed.gad04/logs/vjepa2_1_vramcheck_%j.err
@@ -129,7 +129,7 @@ for c in contexts:
     print(f"  ctxt {c:2d}: {s:6.2f} s/pass  peak alloc {a:5.2f} GiB  reserved {r:5.2f} GiB")
 
 print("\nEarly-context passes (max_context_mode, 1 window):")
-probe = [2, max(contexts) // 2, max(contexts) - 2]
+probe = [2, max(contexts) // 4 * 2, max(contexts) - 2]  # even: multiples of tubelet_size
 t_one = {}
 for c in probe:
     s, a, r = run(c, 1)
