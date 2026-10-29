@@ -452,11 +452,8 @@ def init_distributed(port=37129, rank_and_world_size=(None, None)):
             world_size, rank = 1, 0
             return world_size, rank
 
-    try:
-        os.environ["MASTER_PORT"] = str(port)
-        torch.distributed.init_process_group(backend="nccl", world_size=world_size, rank=rank,timeout=timedelta(seconds=3600))
-    except Exception as e:
-        world_size, rank = 1, 0
-        logger.info(f"Rank: {rank}. Distributed training not available {e}")
-
+    # No process group: ranks never communicate (each saves its own losses
+    # file) and the DistributedSampler takes rank / world_size directly.
+    # A process group would only add a TCPStore hosted by rank 0, whose exit
+    # makes the still-running ranks' NCCL watchdogs fail (job 1622).
     return world_size, rank

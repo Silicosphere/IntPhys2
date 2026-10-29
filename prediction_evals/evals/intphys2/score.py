@@ -51,11 +51,28 @@ def load_losses(results_dir):
     return files, contexts, per_video
 
 
-def surprise(l, how):
+def n_early(l, contexts):
+    """Early-context entries at the start of each row (max_context_mode).
+
+    With max_context_mode, the row for context C starts with C//2 - 1 losses
+    of the first window predicted from contexts 2, 4, ..., C-2, followed by
+    the sliding windows. Detected from the row lengths: the number of
+    sliding windows must then be the same for every context.
+    """
+    lengths = [(row != 0).sum() for row in l]
+    early = [c // 2 - 1 for c in contexts]
+    windows = {n - e for n, e in zip(lengths, early)}
+    if len(set(lengths)) > 1 and len(windows) == 1:
+        return early
+    return [0] * len(contexts)
+
+
+def surprise(l, how, contexts, windows_only=False):
     """l: [n_ctx, T] zero-padded -> [n_ctx] surprise per context."""
+    skip = n_early(l, contexts) if windows_only else [0] * len(contexts)
     out = []
-    for row in l:
-        valid = row[row != 0]  # L1 errors are > 0; zeros are padding
+    for row, k in zip(l, skip):
+        valid = row[row != 0][k:]  # L1 errors are > 0; zeros are padding
         out.append(valid.max() if how == "max" else valid.mean())
     return np.array(out)
 
@@ -94,18 +111,29 @@ def main():
     print(f"{len(pairs)} complete possible/impossible pairs\n")
 
     results = {"files": files, "contexts": contexts, "n_pairs": len(pairs), "per_context": {}}
-    s = {how: {k: surprise(v, how) for k, v in per_video.items()} for how in ("max", "avg")}
+    early_mode = any(n_early(v, contexts)[0] for v in per_video.values())
+    s = {how: {k: surprise(v, how, contexts) for k, v in per_video.items()} for how in ("max", "avg")}
+    # "win": sliding windows only, without the early-context (max_context_mode) losses
+    s["max_win"] = {k: surprise(v, "max", contexts, windows_only=True) for k, v in per_video.items()}
+    # Where the max surprise sits: share of videos whose max is an early-context loss
+    from_early = []
+    for ci in range(len(contexts)):
+        hits = [int(np.argmax(v[ci][v[ci] != 0]) < n_early(v, contexts)[ci]) for v in per_video.values()]
+        from_early.append(100 * float(np.mean(hits)))
     rows = []
     for ci, c in enumerate(contexts):
         r = {}
-        for how in ("max", "avg"):
+        for how in ("max", "avg", "max_win"):
             sp = np.array([s[how][p][ci] for p, _, _ in pairs])
             si = np.array([s[how][i][ci] for _, i, _ in pairs])
             r[f"relative_{how}"] = 100 * float((si > sp).mean())
-            r[f"single_best_thresh_{how}"] = 100 * float(best_threshold_acc(sp, si))
+            if how != "max_win":
+                r[f"single_best_thresh_{how}"] = 100 * float(best_threshold_acc(sp, si))
+        r["max_from_early_%"] = from_early[ci]
         results["per_context"][c] = r
         rows.append({"context": c, **r})
     table = pd.DataFrame(rows).set_index("context")
+    print(f"max_context_mode losses detected: {early_mode}  (relative_max_win ignores them)")
     print(table.round(2).to_string())
 
     best_c = max(contexts, key=lambda c: results["per_context"][c]["relative_max"])
