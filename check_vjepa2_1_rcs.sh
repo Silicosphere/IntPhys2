@@ -24,7 +24,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
-#SBATCH --time=01:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --output=/home/mohamed.gad04/logs/vjepa2_1_vramcheck_%j.out
 #SBATCH --error=/home/mohamed.gad04/logs/vjepa2_1_vramcheck_%j.err
 

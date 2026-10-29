@@ -18,7 +18,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
-#SBATCH --time=00:30:00
+#SBATCH --time=3-00:00:00
 #SBATCH --output=/home/mohamed.gad04/logs/psi_launcher_%j.out
 #SBATCH --error=/home/mohamed.gad04/logs/psi_launcher_%j.err
 
@@ -118,7 +118,7 @@ python -m evals.main_distributed \
     --partition gpu                  \
     --account gp-2027-asem.a.abdelaziz-a  \
     --qos     normal                 \
-    --time    4300                   \
+    --time    4320                   \
     --exclude gpu-02,gpu-03,gpu-04
 
 echo ""

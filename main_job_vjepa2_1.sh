@@ -27,7 +27,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
-#SBATCH --time=01:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --output=/home/mohamed.gad04/logs/vjepa2_1_launcher_%j.out
 #SBATCH --error=/home/mohamed.gad04/logs/vjepa2_1_launcher_%j.err
 
@@ -54,21 +54,22 @@ RESULTS_DIR="$EVAL_ROOT/results/vjepa2_1_vitg_384"
 # Eval job resources (per node). Must fit the smallest eligible node
 # (gpu-01/02/04: 29000 MB schedulable, 12 CPUs; submitit asks 10 CPUs/node).
 EVAL_MEM="24G"
-# Fewest nodes to start with, and minutes. The time must cover the WORST
-# case: MIN_NODES nodes, all on the slowest 16 GB card. Measured by
+# Fewest nodes to start with, sized so the WORST case (MIN_NODES nodes, all
+# on the slowest 16 GB card) fits well inside the time limit. Measured by
 # check_vjepa2_1_rcs.sh (job 1613, RTX 5060 Ti): ~6.6 min/video, so
 #   debug   (60 videos):   ~6.6 GPU-h -> 1 node  ~6.6 h  (6 nodes ~1.2 h)
-#   main    (1012 videos): ~115 GPU-h -> 3 nodes ~39 h   (6 nodes ~20 h; 1 node > gpu max)
+#   main    (1012 videos): ~115 GPU-h -> 3 nodes ~39 h   (6 nodes ~20 h; 1 node > 72 h)
 #   heldout (344 videos):  ~38 GPU-h  -> 1 node  ~38 h
-# A shorter request starts sooner; gpu max is 4320 min.
 case "$DATASET" in
-    intphys2-debug)   DEFAULT_MIN_NODES=1; DEFAULT_TIME_MIN=480  ;;
-    intphys2-main)    DEFAULT_MIN_NODES=3; DEFAULT_TIME_MIN=2520 ;;
-    intphys2-heldout) DEFAULT_MIN_NODES=1; DEFAULT_TIME_MIN=2520 ;;
+    intphys2-debug)   DEFAULT_MIN_NODES=1 ;;
+    intphys2-main)    DEFAULT_MIN_NODES=3 ;;
+    intphys2-heldout) DEFAULT_MIN_NODES=1 ;;
     *) echo "Unknown DATASET=$DATASET" >&2; exit 1 ;;
 esac
 MIN_NODES="${MIN_NODES:-$DEFAULT_MIN_NODES}"
-EVAL_TIME_MIN="${EVAL_TIME_MIN:-$DEFAULT_TIME_MIN}"
+# Minutes. Always the gpu partition max (3 days) so a slow run is never cut
+# off; the job still ends as soon as the eval finishes.
+EVAL_TIME_MIN="${EVAL_TIME_MIN:-4320}"
 # GPUs below 16 GB: gpu-03 (GTX 1080 Ti 11 GB + RTX 3060 12 GB), gpu-08 (GTX 1080 Ti 11 GB)
 EVAL_EXCLUDE="gpu-03,gpu-08"
 
