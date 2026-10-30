@@ -1,0 +1,167 @@
+{
+  "files": [
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank0.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank1.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank2.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank3.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank4.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank5.pth"
+  ],
+  "contexts": [
+    12,
+    18,
+    24,
+    30,
+    36,
+    42
+  ],
+  "n_pairs": 506,
+  "per_context": {
+    "12": {
+      "relative_max": 50.988142292490124,
+      "single_best_thresh_max": 51.08695652173913,
+      "relative_avg": 53.359683794466406,
+      "single_best_thresh_avg": 51.284584980237156,
+      "relative_max_win": 54.347826086956516,
+      "max_from_early_%": 81.91699604743083
+    },
+    "18": {
+      "relative_max": 51.77865612648221,
+      "single_best_thresh_max": 50.988142292490124,
+      "relative_avg": 54.54545454545454,
+      "single_best_thresh_avg": 50.988142292490124,
+      "relative_max_win": 54.347826086956516,
+      "max_from_early_%": 81.02766798418972
+    },
+    "24": {
+      "relative_max": 50.39525691699605,
+      "single_best_thresh_max": 50.8893280632411,
+      "relative_avg": 54.9407114624506,
+      "single_best_thresh_avg": 51.08695652173913,
+      "relative_max_win": 52.569169960474305,
+      "max_from_early_%": 88.63636363636364
+    },
+    "30": {
+      "relative_max": 49.209486166007906,
+      "single_best_thresh_max": 51.18577075098815,
+      "relative_avg": 54.1501976284585,
+      "single_best_thresh_avg": 50.988142292490124,
+      "relative_max_win": 50.59288537549407,
+      "max_from_early_%": 92.3913043478261
+    },
+    "36": {
+      "relative_max": 48.81422924901186,
+      "single_best_thresh_max": 51.18577075098815,
+      "relative_avg": 54.1501976284585,
+      "single_best_thresh_avg": 51.284584980237156,
+      "relative_max_win": 51.18577075098815,
+      "max_from_early_%": 93.87351778656127
+    },
+    "42": {
+      "relative_max": 48.81422924901186,
+      "single_best_thresh_max": 50.8893280632411,
+      "relative_avg": 55.13833992094862,
+      "single_best_thresh_avg": 51.38339920948617,
+      "relative_max_win": 49.209486166007906,
+      "max_from_early_%": 97.33201581027669
+    }
+  },
+  "best_context": 18,
+  "best_relative_max": 51.77865612648221,
+  "table2": {
+    "max": {
+      "Easy": {
+        "acc": 50.0,
+        "context": 18,
+        "pairs": 52
+      },
+      "Medium": {
+        "acc": 52.0,
+        "context": 18,
+        "pairs": 200
+      },
+      "Hard": {
+        "acc": 54.761904761904766,
+        "context": 18,
+        "pairs": 168
+      },
+      "Overall": {
+        "acc": 51.77865612648221,
+        "context": 18,
+        "pairs": 506
+      }
+    },
+    "avg": {
+      "Easy": {
+        "acc": 63.46153846153846,
+        "context": 12,
+        "pairs": 52
+      },
+      "Medium": {
+        "acc": 55.50000000000001,
+        "context": 36,
+        "pairs": 200
+      },
+      "Hard": {
+        "acc": 55.952380952380956,
+        "context": 24,
+        "pairs": 168
+      },
+      "Overall": {
+        "acc": 55.13833992094862,
+        "context": 42,
+        "pairs": 506
+      }
+    },
+    "max_win": {
+      "Easy": {
+        "acc": 55.769230769230774,
+        "context": 24,
+        "pairs": 52
+      },
+      "Medium": {
+        "acc": 54.50000000000001,
+        "context": 18,
+        "pairs": 200
+      },
+      "Hard": {
+        "acc": 55.35714285714286,
+        "context": 12,
+        "pairs": 168
+      },
+      "Overall": {
+        "acc": 54.347826086956516,
+        "context": 12,
+        "pairs": 506
+      }
+    }
+  },
+  "breakdown": {
+    "Split": {
+      "Easy": 50.0,
+      "Hard": 54.76,
+      "Medium": 52.0,
+      "Other": 46.51
+    },
+    "condition": {
+      "continuity": 53.33,
+      "immutability": 50.0,
+      "permanence": 50.83,
+      "solidity": 52.74
+    },
+    "Camera": {
+      "Fixed": 51.92,
+      "Moving": 51.68
+    },
+    "condition x Camera": {
+      "('continuity', 'Fixed')": 59.62,
+      "('continuity', 'Moving')": 48.53,
+      "('immutability', 'Fixed')": 51.92,
+      "('immutability', 'Moving')": 48.53,
+      "('permanence', 'Fixed')": 44.23,
+      "('permanence', 'Moving')": 55.88,
+      "('solidity', 'Fixed')": 51.92,
+      "('solidity', 'Moving')": 53.19
+    }
+  }
+}

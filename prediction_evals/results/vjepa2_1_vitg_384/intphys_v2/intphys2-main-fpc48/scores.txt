@@ -1,0 +1,55 @@
+6 rank files, 1012 videos scored, 1012 in metadata, 0 missing, contexts [12, 18, 24, 30, 36, 42]
+506 complete possible/impossible pairs
+
+max_context_mode losses detected: True  (relative_max_win ignores them)
+         relative_max  single_best_thresh_max  relative_avg  single_best_thresh_avg  relative_max_win  max_from_early_%
+context                                                                                                                
+12              50.99                   51.09         53.36                   51.28             54.35             81.92
+18              51.78                   50.99         54.55                   50.99             54.35             81.03
+24              50.40                   50.89         54.94                   51.09             52.57             88.64
+30              49.21                   51.19         54.15                   50.99             50.59             92.39
+36              48.81                   51.19         54.15                   51.28             51.19             93.87
+42              48.81                   50.89         55.14                   51.38             49.21             97.33
+
+Best context 18: relative accuracy (max surprise) 51.78%
+
+Paper Table 2 layout (relative accuracy %, best context per column):
+  max      Easy: 50.00 (ctx 18, 52 pairs) | Medium: 52.00 (ctx 18, 200 pairs) | Hard: 54.76 (ctx 18, 168 pairs) | Overall: 51.78 (ctx 18, 506 pairs)
+  avg      Easy: 63.46 (ctx 12, 52 pairs) | Medium: 55.50 (ctx 36, 200 pairs) | Hard: 55.95 (ctx 24, 168 pairs) | Overall: 55.14 (ctx 42, 506 pairs)
+  max_win  Easy: 55.77 (ctx 24, 52 pairs) | Medium: 54.50 (ctx 18, 200 pairs) | Hard: 55.36 (ctx 12, 168 pairs) | Overall: 54.35 (ctx 12, 506 pairs)
+
+By Split (max surprise, context 18):
+        acc %  pairs
+Split               
+Easy    50.00     52
+Hard    54.76    168
+Medium  52.00    200
+Other   46.51     86
+
+By condition (max surprise, context 18):
+              acc %  pairs
+condition                 
+continuity    53.33    120
+immutability  50.00    120
+permanence    50.83    120
+solidity      52.74    146
+
+By Camera (max surprise, context 18):
+        acc %  pairs
+Camera              
+Fixed   51.92    208
+Moving  51.68    298
+
+By condition x Camera (max surprise, context 18):
+                     acc %  pairs
+condition    Camera              
+continuity   Fixed   59.62     52
+             Moving  48.53     68
+immutability Fixed   51.92     52
+             Moving  48.53     68
+permanence   Fixed   44.23     52
+             Moving  55.88     68
+solidity     Fixed   51.92     52
+             Moving  53.19     94
+
+Saved results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/scores.json

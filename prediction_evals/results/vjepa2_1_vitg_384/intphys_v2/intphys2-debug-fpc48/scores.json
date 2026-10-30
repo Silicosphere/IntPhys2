@@ -1,0 +1,155 @@
+{
+  "files": [
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank0.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank1.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank2.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank3.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank4.pth",
+    "results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/losses_10fs_12_18_24_30_36_42ctxt_rank5.pth"
+  ],
+  "contexts": [
+    12,
+    18,
+    24,
+    30,
+    36,
+    42
+  ],
+  "n_pairs": 30,
+  "per_context": {
+    "12": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 40.0,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 36.666666666666664,
+      "max_from_early_%": 80.0
+    },
+    "18": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 43.333333333333336,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 53.333333333333336,
+      "max_from_early_%": 81.66666666666667
+    },
+    "24": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 50.0,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 36.666666666666664,
+      "max_from_early_%": 100.0
+    },
+    "30": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 40.0,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 50.0,
+      "max_from_early_%": 100.0
+    },
+    "36": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 43.333333333333336,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 40.0,
+      "max_from_early_%": 100.0
+    },
+    "42": {
+      "relative_max": 66.66666666666666,
+      "single_best_thresh_max": 56.666666666666664,
+      "relative_avg": 36.666666666666664,
+      "single_best_thresh_avg": 55.00000000000001,
+      "relative_max_win": 50.0,
+      "max_from_early_%": 100.0
+    }
+  },
+  "best_context": 12,
+  "best_relative_max": 66.66666666666666,
+  "table2": {
+    "max": {
+      "Easy": {
+        "acc": 66.66666666666666,
+        "context": 12,
+        "pairs": 30
+      },
+      "Medium": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Hard": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Overall": {
+        "acc": 66.66666666666666,
+        "context": 12,
+        "pairs": 30
+      }
+    },
+    "avg": {
+      "Easy": {
+        "acc": 50.0,
+        "context": 24,
+        "pairs": 30
+      },
+      "Medium": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Hard": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Overall": {
+        "acc": 50.0,
+        "context": 24,
+        "pairs": 30
+      }
+    },
+    "max_win": {
+      "Easy": {
+        "acc": 53.333333333333336,
+        "context": 18,
+        "pairs": 30
+      },
+      "Medium": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Hard": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Overall": {
+        "acc": 53.333333333333336,
+        "context": 18,
+        "pairs": 30
+      }
+    }
+  },
+  "breakdown": {
+    "Split": {
+      "Easy": 66.67
+    },
+    "condition": {
+      "permanence": 83.33,
+      "solidity": 55.56
+    },
+    "Camera": {
+      "Fixed": 66.67
+    },
+    "condition x Camera": {
+      "('permanence', 'Fixed')": 83.33,
+      "('solidity', 'Fixed')": 55.56
+    }
+  }
+}
