@@ -29,6 +29,21 @@ import numpy as np
 import pandas as pd
 import torch
 
+# Easy / Medium / Hard of the paper's Table 2, defined by environment exactly
+# as in ComputeScoreIntPhys2.ipynb (the metadata's Difficulty column differs:
+# it has an "Unknown" level).
+PAPER_SPLITS = {
+    "Easy": ["BasicLevel_0"],
+    "Medium": ["SaltFlats_0", "DesertMap_0", "RaceTrack_0", "TropicalIsland_0"],
+    "Hard": ["PLVDaylight_0", "Egypt_0", "RuralAustralia03_0", "ParkingGarage_0", "None"],
+}
+# Applied literally (the notebook's "None" does not match the metadata's
+# "None_0"), this equals the metadata's Difficulty column: Easy 52, Medium 200,
+# Hard 168 pairs on Main. The other 86 pairs (None_0, ShoppingMall_0,
+# ConcertHall_0, BasketBallCourt_0, Arena_0, Opera_0) are "Other" and only
+# count towards Overall.
+ENV_TO_SPLIT = {env: split for split, envs in PAPER_SPLITS.items() for env in envs}
+
 
 def load_losses(results_dir):
     files = sorted(glob.glob(os.path.join(results_dir, "losses_*ctxt*.pth")))
@@ -94,7 +109,8 @@ def main():
     args = ap.parse_args()
 
     files, contexts, per_video = load_losses(args.results)
-    meta = pd.read_csv(args.metadata)
+    meta = pd.read_csv(args.metadata, keep_default_na=False)  # keep env "None" as a string
+    meta["Split"] = meta["env"].map(ENV_TO_SPLIT).fillna("Other")
     meta["key"] = meta["file_name"].map(lambda p: os.path.splitext(os.path.basename(p))[0])
     missing = sorted(set(meta["key"]) - set(per_video))
     print(f"{len(files)} rank files, {len(per_video)} videos scored, {len(meta)} in metadata, "
@@ -143,16 +159,42 @@ def main():
     print(f"\nBest context {best_c}: relative accuracy (max surprise) "
           f"{results['best_relative_max']:.2f}%")
 
-    # Breakdowns at the best context (columns of Tables 2 and 3)
-    correct = pd.DataFrame([{**m.to_dict(), "correct": s["max"][i][ci] > s["max"][p][ci]}
-                            for p, i, m in pairs])
+    # Per-pair correctness for every surprise measure and context
+    recs = []
+    for p, i, m in pairs:
+        r = {k: m[k] for k in ("Split", "condition", "Camera") if k in m}
+        for how in ("max", "avg", "max_win"):
+            for cj, c in enumerate(contexts):
+                r[f"{how}@{c}"] = s[how][i][cj] > s[how][p][cj]
+        recs.append(r)
+    correct = pd.DataFrame(recs)
+
+    # Table 2 layout: per column, the best context (the paper reports each
+    # model's best run per column over its hyperparameters).
+    print("\nPaper Table 2 layout (relative accuracy %, best context per column):")
+    table2 = {}
+    for how in ("max", "avg", "max_win"):
+        row = {}
+        for col in ["Easy", "Medium", "Hard", "Overall"]:
+            sub = correct if col == "Overall" else correct[correct["Split"] == col]
+            accs = {c: 100 * sub[f"{how}@{c}"].mean() for c in contexts}
+            c = max(accs, key=accs.get)
+            row[col] = f"{accs[c]:.2f} (ctx {c}, {len(sub)} pairs)"
+            table2.setdefault(how, {})[col] = {"acc": accs[c], "context": c, "pairs": len(sub)}
+        print(f"  {how:8s} " + " | ".join(f"{k}: {v}" for k, v in row.items()))
+    results["table2"] = table2
+
+    # Breakdowns at the best context for max surprise (Tables 2 and 3)
     results["breakdown"] = {}
-    for col in ("Difficulty", "condition", "Camera"):
-        if col in correct:
-            b = correct.groupby(col)["correct"].agg(["mean", "size"])
+    key = f"max@{best_c}"
+    for cols in (["Split"], ["condition"], ["Camera"], ["condition", "Camera"]):
+        if all(c in correct for c in cols):
+            b = correct.groupby(cols)[key].agg(["mean", "size"])
             b["mean"] *= 100
-            results["breakdown"][col] = b["mean"].round(2).to_dict()
-            print(f"\nBy {col} (context {best_c}):\n{b.round(2).rename(columns={'mean': 'acc %', 'size': 'pairs'}).to_string()}")
+            name = " x ".join(cols)
+            results["breakdown"][name] = {str(k): v for k, v in b["mean"].round(2).to_dict().items()}
+            print(f"\nBy {name} (max surprise, context {best_c}):\n"
+                  f"{b.round(2).rename(columns={'mean': 'acc %', 'size': 'pairs'}).to_string()}")
 
     out = args.out or os.path.join(args.results, "scores.json")
     with open(out, "w") as f:
