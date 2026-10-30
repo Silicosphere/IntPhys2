@@ -1,5 +1,5 @@
 \documentclass[10pt]{article}
-\usepackage[a4paper,margin=1.6cm]{geometry}
+\usepackage[a4paper,margin=1.4cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{booktabs}
@@ -24,9 +24,9 @@
 \centering
 \caption{\textbf{Accuracy values showing best model performance for each difficulty level.}
 Rows other than V-JEPA 2.1 are reproduced from IntPhys 2 (Bordes et al., 2025), Table 2: each model's best run per
-column over about a dozen hyperparameter sets. For V-JEPA 2.1 (shaded, ours), each column is the best of the 6
-context lengths, with surprise aggregated over time by its maximum (protocol of the released code) or its mean.
-Bold: best per model type, ours included.}
+column over a hyperparameter grid, with surprise averaged over time (the paper's default, App.~D.1). For
+V-JEPA 2.1 (shaded, ours), each column is the best of the 6 context lengths; the max-surprise row is given for
+reference only. Bold: best per model type, ours included.}
 \small
 \begin{tabular}{l|c|ccc|c||c|c}
 \toprule
@@ -42,9 +42,9 @@ Cosmos-4B & Predictive & 46.00 & 52.00 & 48.05 & 49.41 & 48.84 & \gr{85.42} \\
 V-JEPA-h + RoPE & Predictive & 52.00 & 53.00 & 57.42 & 53.75 & 54.65 & \gr{98.30} \\
 V-JEPA 2-h & Predictive & 54.00 & \textbf{58.50} & \textbf{59.38} & \textbf{57.51} & \textbf{56.40} & \gr{87.22} \\
 \rowcolor{ours}
-V-JEPA 2.1-g, max surprise & Predictive & 50.00 & 52.00 & 54.76 & 51.78 & -- & \gr{-} \\
+V-JEPA 2.1-g (avg surprise) & Predictive & \textbf{63.46} & 55.50 & 55.95 & 55.14 & -- & \gr{-} \\
 \rowcolor{ours}
-V-JEPA 2.1-g, mean surprise & Predictive & \textbf{63.46} & 55.50 & 55.95 & 55.14 & -- & \gr{-} \\
+\quad\textit{max surprise, ref.} & Predictive & 50.00 & 52.00 & 54.76 & 51.78 & -- & \gr{-} \\
 \midrule
 Human & - & 96.17 & 97.8 & 95.5 & 96.44 & 92.44 & \gr{-} \\
 \bottomrule
@@ -54,7 +54,7 @@ Human & - & 96.17 & 97.8 & 95.5 & 96.44 & 92.44 & \gr{-} \\
 \begin{table}[h]
 \centering
 \caption{\textbf{Accuracy across property and camera type.} For each model, the accuracy of each subset is the best one
-across a set of hyperparameters (for V-JEPA 2.1: the 6 context lengths). The smaller size of each subset contributes to
+across a set of hyperparameters (for V-JEPA 2.1: the 6 context lengths, avg surprise; max surprise for reference). The smaller size of each subset contributes to
 volatility in performance (52 / 68 pairs per Fixed / Moving cell, 94 for Solidity Moving).}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -73,9 +73,9 @@ Cosmos-4B & 51.92 & 41.18 & 50.96 & 48.32 & 53.85 & 50.00 & 48.08 & 55.32 \\
 V-JEPA-h + RoPE & 63.46 & \textbf{67.65} & 51.92 & 56.38 & 50.00 & 57.35 & 50.00 & 52.13 \\
 V-JEPA 2-h & 59.62 & 57.35 & \textbf{55.77} & \textbf{58.72} & 57.69 & \textbf{75.00} & 46.15 & 58.51 \\
 \rowcolor{ours}
-V-JEPA 2.1-g, max surprise & 44.23 & 55.88 & 51.92 & 50.00 & 59.62 & 52.94 & 51.92 & 53.19 \\
+V-JEPA 2.1-g (avg surprise) & \textbf{67.31} & 54.41 & \textbf{55.77} & 54.41 & 59.62 & 60.29 & \textbf{53.85} & 55.32 \\
 \rowcolor{ours}
-V-JEPA 2.1-g, mean surprise & \textbf{67.31} & 54.41 & \textbf{55.77} & 54.41 & 59.62 & 60.29 & \textbf{53.85} & 55.32 \\
+\quad\textit{max surprise, ref.} & 44.23 & 55.88 & 51.92 & 50.00 & 59.62 & 52.94 & 51.92 & 53.19 \\
 \midrule
 Human & 100.0 & 99.26 & 97.11 & 90.44 & 99.04 & 94.44 & 96.15 & 95.21 \\
 \bottomrule
@@ -83,6 +83,7 @@ Human & 100.0 & 99.26 & 97.11 & 90.44 & 99.04 & 94.44 & 96.15 & 95.21 \\
 \end{table}
 
 \vspace{-2pt}
+\small
 \textbf{Experimental setup.}
 \emph{Model.} Official V-JEPA 2.1 ViT-g/16 release at 384\,px from facebookresearch/\allowbreak vjepa2
 (checkpoint \texttt{vjepa2\_1\_vitg\_384.pt}). The model code is vendored unchanged from that repository, and the context encoder,
@@ -92,11 +93,16 @@ as in its training targets, and the predictor's mask token 0 (the one used for v
 
 \emph{Surprise.} Following Garrido et al.\ (2025) and the setup reported as best for V-JEPA~2 in IntPhys~2:
 videos are sampled every 10th frame (6\,fps), split into 48-frame windows with stride 2, and for each window the
-model predicts the features of all frames after a context of $C\in\{12,18,24,30,36,42\}$ frames (the paper's
-$\{4,\dots,14\}$ scaled by $48/16$). The prediction error is the L1 distance between predicted and target
-features (bf16). With \texttt{max\_context\_mode}, the first window is also predicted from every shorter
-context $2,4,\dots,C-2$, in case the physics-breaking event happens early. A video's surprise is the maximum
-(or mean) of these errors over time.
+model predicts the features of all frames after a context of $C\in\{12,18,24,30,36,42\}$ frames, as in the
+authors' released V-JEPA~2 config (\texttt{vjepa\_2.yaml}; the paper lists $\{4,\dots,14\}$). The prediction error is
+the L1 distance between predicted and target features (bf16). With \texttt{max\_context\_mode} (the paper's
+growing-context protocol), the first window is also predicted from every shorter context $2,4,\dots,C-2$, so that
+early events are not missed. A video's surprise is the average of these errors over time (App.~D.1).
+
+\emph{Hyperparameters.} For V-JEPA and V-JEPA~2 the paper reports, per column, the maximum over window size
+$\{16,32,48\}$ at a fixed 6\,fps, prediction length (fixed, or to the end of the window) and context length
+(App.~D.3); V-JEPA~2's best was window 48, prediction to the end of the window, 6\,fps (Table~8). We evaluate only
+that setting and maximise over the 6 context lengths, a subset of their search.
 
 \emph{Metric.} Relative accuracy on matched pairs: in each scene quadruplet, the impossible video
 \texttt{k\_Impossible} must be more surprising than its matched \texttt{k\_Possible} ($k=1,2$), giving 506 pairs
@@ -105,9 +111,9 @@ Easy/Medium/Hard follow the environment lists of the authors' scoring notebook (
 pairs count only towards Overall). The paper's Easy and Hard values are not multiples of $1/52$ and $1/168$, so
 its subsets differ slightly. Held Out was not evaluated.
 
-\emph{Observation.} For 81--97\% of videos, the maximum error comes from the short-context predictions on the
-first window rather than the sliding windows, so under max surprise the context length barely matters, and
-accuracy stays at chance. The mean surprise is modestly above chance.
+\emph{Observation.} With the paper's average surprise, V-JEPA~2.1-g reaches 55.14\% overall, below
+V-JEPA~2-h (57.51\%). Max surprise stays at chance (51.78\%): for 81--97\% of videos the maximum comes from the
+short-context predictions on the first window, so context length barely matters.
 
 \emph{Compute.} 6 single-GPU nodes (RTX 5090, 3090, 5070\,Ti, 5060\,Ti, 4060\,Ti, plus one more 16\,GB card),
 $\approx$21\,h wall-clock, 1.3--7.3\,min per video depending on the GPU; videos split evenly across ranks, with no

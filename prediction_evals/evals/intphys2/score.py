@@ -6,13 +6,14 @@ with the split's metadata.csv and reports, for every context length:
   - Relative accuracy: within each scene quadruplet, k_Impossible must be more
     surprising than its matched k_Possible (k = 1, 2), as in the pairwise
     protocol of IntPhys 2 (Fig. 4 left) and compute_metrics() in
-    facebookresearch/jepa-intuitive-physics. Surprise = max over time ("max")
-    or mean over time ("avg") of the prediction error.
+    facebookresearch/jepa-intuitive-physics. Surprise = mean over time ("avg",
+    the paper's default: "We use average surprise unless specified otherwise",
+    App. D.1) or max over time ("max") of the prediction error.
   - Single-video accuracy at the best threshold (an oracle upper bound for the
     harder single-video protocol, Fig. 4 middle).
-The paper reports, per model, its best run over hyperparameters; here that is
-the best context length. Breakdowns (difficulty / condition / camera) are
-given at that context.
+The paper reports, per model and per table column, the maximal accuracy over
+its hyperparameters (window size, prediction length, context length; App. D.3);
+here that is the best context length. Headline and breakdowns use avg surprise.
 
 Usage (from prediction_evals/):
   python -m evals.intphys2.score \
@@ -152,12 +153,11 @@ def main():
     print(f"max_context_mode losses detected: {early_mode}  (relative_max_win ignores them)")
     print(table.round(2).to_string())
 
-    best_c = max(contexts, key=lambda c: results["per_context"][c]["relative_max"])
-    ci = contexts.index(best_c)
+    best_c = max(contexts, key=lambda c: results["per_context"][c]["relative_avg"])
     results["best_context"] = best_c
-    results["best_relative_max"] = results["per_context"][best_c]["relative_max"]
-    print(f"\nBest context {best_c}: relative accuracy (max surprise) "
-          f"{results['best_relative_max']:.2f}%")
+    results["best_relative_avg"] = results["per_context"][best_c]["relative_avg"]
+    print(f"\nBest context {best_c}: relative accuracy (avg surprise, paper default) "
+          f"{results['best_relative_avg']:.2f}%")
 
     # Per-pair correctness for every surprise measure and context
     recs = []
@@ -173,7 +173,7 @@ def main():
     # model's best run per column over its hyperparameters).
     print("\nPaper Table 2 layout (relative accuracy %, best context per column):")
     table2 = {}
-    for how in ("max", "avg", "max_win"):
+    for how in ("avg", "max", "max_win"):
         row = {}
         for col in ["Easy", "Medium", "Hard", "Overall"]:
             sub = correct if col == "Overall" else correct[correct["Split"] == col]
@@ -184,16 +184,16 @@ def main():
         print(f"  {how:8s} " + " | ".join(f"{k}: {v}" for k, v in row.items()))
     results["table2"] = table2
 
-    # Breakdowns at the best context for max surprise (Tables 2 and 3)
+    # Breakdowns at the best context for avg surprise (Tables 2 and 3)
     results["breakdown"] = {}
-    key = f"max@{best_c}"
+    key = f"avg@{best_c}"
     for cols in (["Split"], ["condition"], ["Camera"], ["condition", "Camera"]):
         if all(c in correct for c in cols):
             b = correct.groupby(cols)[key].agg(["mean", "size"])
             b["mean"] *= 100
             name = " x ".join(cols)
             results["breakdown"][name] = {str(k): v for k, v in b["mean"].round(2).to_dict().items()}
-            print(f"\nBy {name} (max surprise, context {best_c}):\n"
+            print(f"\nBy {name} (avg surprise, context {best_c}):\n"
                   f"{b.round(2).rename(columns={'mean': 'acc %', 'size': 'pairs'}).to_string()}")
 
     out = args.out or os.path.join(args.results, "scores.json")

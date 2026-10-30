@@ -66,31 +66,9 @@
       "max_from_early_%": 100.0
     }
   },
-  "best_context": 12,
-  "best_relative_max": 66.66666666666666,
+  "best_context": 24,
+  "best_relative_avg": 50.0,
   "table2": {
-    "max": {
-      "Easy": {
-        "acc": 66.66666666666666,
-        "context": 12,
-        "pairs": 30
-      },
-      "Medium": {
-        "acc": NaN,
-        "context": 12,
-        "pairs": 0
-      },
-      "Hard": {
-        "acc": NaN,
-        "context": 12,
-        "pairs": 0
-      },
-      "Overall": {
-        "acc": 66.66666666666666,
-        "context": 12,
-        "pairs": 30
-      }
-    },
     "avg": {
       "Easy": {
         "acc": 50.0,
@@ -110,6 +88,28 @@
       "Overall": {
         "acc": 50.0,
         "context": 24,
+        "pairs": 30
+      }
+    },
+    "max": {
+      "Easy": {
+        "acc": 66.66666666666666,
+        "context": 12,
+        "pairs": 30
+      },
+      "Medium": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Hard": {
+        "acc": NaN,
+        "context": 12,
+        "pairs": 0
+      },
+      "Overall": {
+        "acc": 66.66666666666666,
+        "context": 12,
         "pairs": 30
       }
     },
@@ -138,17 +138,17 @@
   },
   "breakdown": {
     "Split": {
-      "Easy": 66.67
+      "Easy": 50.0
     },
     "condition": {
-      "permanence": 83.33,
+      "permanence": 41.67,
       "solidity": 55.56
     },
     "Camera": {
-      "Fixed": 66.67
+      "Fixed": 50.0
     },
     "condition x Camera": {
-      "('permanence', 'Fixed')": 83.33,
+      "('permanence', 'Fixed')": 41.67,
       "('solidity', 'Fixed')": 55.56
     }
   }

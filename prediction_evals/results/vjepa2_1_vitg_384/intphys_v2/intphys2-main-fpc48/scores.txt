@@ -11,45 +11,45 @@ context
 36              48.81                   51.19         54.15                   51.28             51.19             93.87
 42              48.81                   50.89         55.14                   51.38             49.21             97.33
 
-Best context 18: relative accuracy (max surprise) 51.78%
+Best context 42: relative accuracy (avg surprise, paper default) 55.14%
 
 Paper Table 2 layout (relative accuracy %, best context per column):
-  max      Easy: 50.00 (ctx 18, 52 pairs) | Medium: 52.00 (ctx 18, 200 pairs) | Hard: 54.76 (ctx 18, 168 pairs) | Overall: 51.78 (ctx 18, 506 pairs)
   avg      Easy: 63.46 (ctx 12, 52 pairs) | Medium: 55.50 (ctx 36, 200 pairs) | Hard: 55.95 (ctx 24, 168 pairs) | Overall: 55.14 (ctx 42, 506 pairs)
+  max      Easy: 50.00 (ctx 18, 52 pairs) | Medium: 52.00 (ctx 18, 200 pairs) | Hard: 54.76 (ctx 18, 168 pairs) | Overall: 51.78 (ctx 18, 506 pairs)
   max_win  Easy: 55.77 (ctx 24, 52 pairs) | Medium: 54.50 (ctx 18, 200 pairs) | Hard: 55.36 (ctx 12, 168 pairs) | Overall: 54.35 (ctx 12, 506 pairs)
 
-By Split (max surprise, context 18):
+By Split (avg surprise, context 42):
         acc %  pairs
 Split               
-Easy    50.00     52
+Easy    57.69     52
 Hard    54.76    168
-Medium  52.00    200
-Other   46.51     86
+Medium  55.50    200
+Other   53.49     86
 
-By condition (max surprise, context 18):
+By condition (avg surprise, context 42):
               acc %  pairs
 condition                 
-continuity    53.33    120
-immutability  50.00    120
-permanence    50.83    120
-solidity      52.74    146
+continuity    58.33    120
+immutability  52.50    120
+permanence    58.33    120
+solidity      52.05    146
 
-By Camera (max surprise, context 18):
+By Camera (avg surprise, context 42):
         acc %  pairs
 Camera              
-Fixed   51.92    208
-Moving  51.68    298
+Fixed   54.33    208
+Moving  55.70    298
 
-By condition x Camera (max surprise, context 18):
+By condition x Camera (avg surprise, context 42):
                      acc %  pairs
 condition    Camera              
-continuity   Fixed   59.62     52
-             Moving  48.53     68
-immutability Fixed   51.92     52
-             Moving  48.53     68
-permanence   Fixed   44.23     52
-             Moving  55.88     68
-solidity     Fixed   51.92     52
-             Moving  53.19     94
+continuity   Fixed   55.77     52
+             Moving  60.29     68
+immutability Fixed   50.00     52
+             Moving  54.41     68
+permanence   Fixed   63.46     52
+             Moving  54.41     68
+solidity     Fixed   48.08     52
+             Moving  54.26     94
 
 Saved results/vjepa2_1_vitg_384/intphys_v2/intphys2-main-fpc48/scores.json

@@ -11,33 +11,33 @@ context
 36              66.67                   56.67         43.33                    55.0             40.00            100.00
 42              66.67                   56.67         36.67                    55.0             50.00            100.00
 
-Best context 12: relative accuracy (max surprise) 66.67%
+Best context 24: relative accuracy (avg surprise, paper default) 50.00%
 
 Paper Table 2 layout (relative accuracy %, best context per column):
-  max      Easy: 66.67 (ctx 12, 30 pairs) | Medium: nan (ctx 12, 0 pairs) | Hard: nan (ctx 12, 0 pairs) | Overall: 66.67 (ctx 12, 30 pairs)
   avg      Easy: 50.00 (ctx 24, 30 pairs) | Medium: nan (ctx 12, 0 pairs) | Hard: nan (ctx 12, 0 pairs) | Overall: 50.00 (ctx 24, 30 pairs)
+  max      Easy: 66.67 (ctx 12, 30 pairs) | Medium: nan (ctx 12, 0 pairs) | Hard: nan (ctx 12, 0 pairs) | Overall: 66.67 (ctx 12, 30 pairs)
   max_win  Easy: 53.33 (ctx 18, 30 pairs) | Medium: nan (ctx 12, 0 pairs) | Hard: nan (ctx 12, 0 pairs) | Overall: 53.33 (ctx 18, 30 pairs)
 
-By Split (max surprise, context 12):
+By Split (avg surprise, context 24):
        acc %  pairs
 Split              
-Easy   66.67     30
+Easy    50.0     30
 
-By condition (max surprise, context 12):
+By condition (avg surprise, context 24):
             acc %  pairs
 condition               
-permanence  83.33     12
+permanence  41.67     12
 solidity    55.56     18
 
-By Camera (max surprise, context 12):
+By Camera (avg surprise, context 24):
         acc %  pairs
 Camera              
-Fixed   66.67     30
+Fixed    50.0     30
 
-By condition x Camera (max surprise, context 12):
+By condition x Camera (avg surprise, context 24):
                    acc %  pairs
 condition  Camera              
-permanence Fixed   83.33     12
+permanence Fixed   41.67     12
 solidity   Fixed   55.56     18
 
 Saved results/vjepa2_1_vitg_384/intphys_v2/intphys2-debug-fpc48/scores.json
